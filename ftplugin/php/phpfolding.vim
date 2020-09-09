@@ -595,8 +595,9 @@ function! PHPFoldText() " {{{
 	" Some common replaces...
 	" if currentLine != v:foldend
 	let lineString = substitute(lineString, '/\*\|\*/\d\=', '', 'g')
-	let lineString = substitute(lineString, '{$', '', 'g')
-	let lineString = substitute(lineString, '($', '(..);', 'g')
+	let lineString = substitute(lineString, '{$', '{...}', 'g')
+	let lineString = substitute(lineString, '($', '(...);', 'g')
+	let lineString = substitute(lineString, '[$', '[...];', 'g')
 	" endif
 
 	" Append an (a) if there is PhpDoc in the fold (a for API)
