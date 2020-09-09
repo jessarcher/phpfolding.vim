@@ -92,7 +92,7 @@ let g:phpDocBlockIncludedPostfix = '**#@+'
 " .. search this # of empty lines for PhpDoc comments
 let g:searchPhpDocLineCount = 1
 " .. search this # of empty lines that 'trail' the foldmatch
-let g:searchEmptyLinesPostfixing = 1
+let g:searchEmptyLinesPostfixing = 0
 " }}}
 " {{{ Script constants
 let s:synIDattr_exists = exists('*synIDattr')
@@ -514,19 +514,6 @@ endfunction
 function! s:FindPatternEnd(endPattern) " {{{
 	let line = search(a:endPattern, 'W')
 
-	" If the fold exceeds more than one line
-	if line - s:lineStart >= 1
-		" Then be greedy with extra 'trailing' empty line(s)
-		let s:counter = 0
-		while s:counter < s:searchEmptyLinesPostfixing
-			let linestr = getline(line + 1)
-			if (matchstr(linestr, '^\s*$') == linestr)
-				let line = line + 1
-			endif
-			let s:counter = s:counter + 1
-		endwhile
-	endif
-
 	return line
 endfunction
 " }}}
@@ -601,21 +588,16 @@ function! PHPFoldText() " {{{
 		endwhile
 		let lineString = getline(currentLine)
 	endif
+	
+	" Hide the contents of first use statement so they're all equal 
+	let lineString = substitute(lineString, '^use .*', 'use', 'g')
 
 	" Some common replaces...
 	" if currentLine != v:foldend
 	let lineString = substitute(lineString, '/\*\|\*/\d\=', '', 'g')
-	let lineString = substitute(lineString, '^\s*\*\?\s*', '', 'g')
 	let lineString = substitute(lineString, '{$', '', 'g')
 	let lineString = substitute(lineString, '($', '(..);', 'g')
 	" endif
-
-	" Emulates printf("%3d", lines)..
-	if lines < 10
-		let lines = "  " . lines
-	elseif lines < 100
-		let lines = " " . lines
-	endif
 
 	" Append an (a) if there is PhpDoc in the fold (a for API)
 	if currentLine != v:foldstart
@@ -623,7 +605,7 @@ function! PHPFoldText() " {{{
 	endif
 
 	" Return the foldtext
-	return "+--".lines." lines: " . lineString
+	return lineString . " (" . lines . " lines) "
 endfunction
 " }}}
 function! SkipMatch() " {{{
